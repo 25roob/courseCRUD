@@ -28,15 +28,18 @@ def create_client(client):
 
 def list_clients():
     for idx, client in enumerate(clients):
-        print(f'{idx}: {client}') # may not work properly
+        uid = idx
+        name = client['name']
+        company = client['company']
+        email = client['email']
+        position = client['position']
+        print(f'{uid} | {name} | {company} | {email} | {position}') 
 
-def update_client(client_name, updated_client_name):
+def update_client(client_index, updated_client_data):
     global clients
-    if client_name in clients:
-        index = clients.index(client_name)
-        clients[index] = updated_client_name
-    else:
-        print('Client not in clients list')
+    
+    clients[client_index].update(updated_client_data)
+    
 
 def delete_client(client_name):
     global clients
@@ -87,6 +90,14 @@ def _get_client_name():
 
     return client_name
 
+def _new_client_data():
+    return {
+            'name': _get_client_field('name'),
+            'company': _get_client_field('company'),
+            'email': _get_client_field('email'),
+            'position': _get_client_field('position')
+        }
+
 if __name__ == '__main__':
     _print_welcome()
 
@@ -94,12 +105,7 @@ if __name__ == '__main__':
     command = command.upper()
 
     if command == 'C':
-        client = {
-            'name': _get_client_field('name'),
-            'company': _get_client_field('company'),
-            'email': _get_client_field('email'),
-            'position': _get_client_field('position')
-        }
+        client = _new_client_data()
         create_client(client)
         list_clients()
     elif command == 'L':
@@ -109,10 +115,15 @@ if __name__ == '__main__':
         delete_client(client_name)
         list_clients()
     elif command == 'U':
-        client_name = _get_client_name()
-        updated_client_name = input('What is the updated client name? ')
-        update_client(client_name, updated_client_name)
         list_clients()
+        client_index = int(input("What's the client's uid?: "))
+        if client_index <= len(clients)-1:
+            updated_client_data = _new_client_data()
+            update_client(client_index, updated_client_data)
+            list_clients()
+        else:
+            print(f'The client uid: {client_index}, is not in the database.')
+        
     elif command == 'S':
         client_name = _get_client_name()
         found = search_client(client_name)
