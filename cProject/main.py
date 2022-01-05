@@ -41,22 +41,25 @@ def update_client(client_index, updated_client_data):
     clients[client_index].update(updated_client_data)
     
 
-def delete_client(client_name):
+def delete_client(client_index):
     global clients
-    if client_name in clients:
-        clients.remove(client_name)
+    if client_index <= len(clients)-1:
+        rdata = clients.pop(client_index)
     else: 
-        print('Client is not in clients list.')
+        print('Client is not in database.')
+    name = rdata['name']
+    company = rdata['company']
+    email = rdata['email']
+    position = rdata['position']
+    print(f'Data deleted: name: {name} | company: {company} | email: {email} | position: {position}') 
+    
 
-def search_client(client_name):
+def search_client(client_index):
     global clients
 
-    for client in clients:
-        if client != client_name:
-            continue
-        else:
-            return True
-
+    if client_index <= len(clients)-1:
+        return True
+    
 
 def _print_welcome():
     print('WELCOME TO PLATZIVENTAS')
@@ -76,19 +79,19 @@ def _get_client_field(field_name):
 
     return field
 
-def _get_client_name():
-    client_name = None
+def _get_client_index():
+    client_index = None
 
-    while not client_name:
-        client_name = input('What is the client name? ')
+    while not client_index:
+        client_index = input("What's the client's uid?: ")
 
-        if client_name == 'exit':
-            client_name = None
+        if client_index == 'exit':
+            client_index = None
             break
-    if not client_name:
+    if not client_index:
         sys.exit()
 
-    return client_name
+    return int(client_index)
 
 def _new_client_data():
     return {
@@ -97,6 +100,16 @@ def _new_client_data():
             'email': _get_client_field('email'),
             'position': _get_client_field('position')
         }
+
+def _print_client_data(client_index):
+    global clients
+
+    data = clients[client_index]
+    name = data['name']
+    company = data['company']
+    email = data['email']
+    position = data['position']
+    print(f'Client data -> name: {name} | company: {company} | email: {email} | position: {position}') 
 
 if __name__ == '__main__':
     _print_welcome()
@@ -111,12 +124,14 @@ if __name__ == '__main__':
     elif command == 'L':
         list_clients()
     elif command == 'D':
-        client_name = _get_client_name()
-        delete_client(client_name)
+        list_clients()
+        client_index = _get_client_index()
+        
+        delete_client(client_index)
         list_clients()
     elif command == 'U':
         list_clients()
-        client_index = int(input("What's the client's uid?: "))
+        client_index = _get_client_index()
         if client_index <= len(clients)-1:
             updated_client_data = _new_client_data()
             update_client(client_index, updated_client_data)
@@ -125,11 +140,13 @@ if __name__ == '__main__':
             print(f'The client uid: {client_index}, is not in the database.')
         
     elif command == 'S':
-        client_name = _get_client_name()
-        found = search_client(client_name)
+        client_index = _get_client_index()
+        found = search_client(client_index)
         if found:
-            print("The client is in the client's list")
+            print("The client is in the clients database")
+            _print_client_data(client_index)
         else:
-            print(f'The client {client_name} is not in our client\'s list.')
+            print(f'The client index: {client_index}, is not in our clients database.')
+        
     else:
         print('Invalid command.')
