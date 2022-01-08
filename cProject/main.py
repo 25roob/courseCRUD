@@ -1,20 +1,27 @@
 import sys
+import csv
+import os
 
 
-clients = [
-    {
-        'name': 'Pablo',
-        'company': 'Google',
-        'email': 'pablo@google.com',
-        'position': 'Sofware engineer'
-    },
-    {
-        'name': 'Ricardo',
-        'company': 'Facebook',
-        'email': 'ricardo@facebook.com',
-        'position': 'Data engineer'
-    }
-]
+CLIENT_TABLE = '.clients.csv'
+CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
+clients = []
+
+def _initialize_clients_from_storage():
+    with open(CLIENT_TABLE, mode='r') as f:
+        reader = csv.DictReader(f, fieldnames=CLIENT_SCHEMA)
+
+        for row in reader:
+            clients.append(row)
+
+def _save_clients_to_storage():
+    tmp_table_name = f'{CLIENT_TABLE}.tmp'
+    with open(tmp_table_name, mode='w') as f:
+        writer = csv.DictWriter(f, fieldnames=CLIENT_SCHEMA)
+        writer.writerows(clients)
+
+        os.remove(CLIENT_TABLE)
+        os.rename(tmp_table_name, CLIENT_TABLE)
 
 
 def create_client(client):
@@ -51,14 +58,15 @@ def delete_client(client_index):
     company = rdata['company']
     email = rdata['email']
     position = rdata['position']
-    print(f'Data deleted: name: {name} | company: {company} | email: {email} | position: {position}') 
+    print(f'Data deleted -> name: {name} | company: {company} | email: {email} | position: {position}') 
     
 
-def search_client(client_index):
-    global clients
-
-    if client_index <= len(clients)-1:
-        return True
+def search_client(client_name):
+    for client in clients:
+        if client['name'] != client_name:
+            continue
+        else:
+            return True
     
 
 def _print_welcome():
@@ -111,7 +119,11 @@ def _print_client_data(client_index):
     position = data['position']
     print(f'Client data -> name: {name} | company: {company} | email: {email} | position: {position}') 
 
+
 if __name__ == '__main__':
+
+    _initialize_clients_from_storage()
+
     _print_welcome()
 
     command = input()
@@ -120,33 +132,35 @@ if __name__ == '__main__':
     if command == 'C':
         client = _new_client_data()
         create_client(client)
-        list_clients()
+        
     elif command == 'L':
         list_clients()
     elif command == 'D':
-        list_clients()
+        
         client_index = _get_client_index()
         
         delete_client(client_index)
-        list_clients()
+        
     elif command == 'U':
-        list_clients()
+        
         client_index = _get_client_index()
         if client_index <= len(clients)-1:
             updated_client_data = _new_client_data()
             update_client(client_index, updated_client_data)
-            list_clients()
+            
         else:
             print(f'The client uid: {client_index}, is not in the database.')
         
     elif command == 'S':
-        client_index = _get_client_index()
-        found = search_client(client_index)
+        client_name = _get_client_field('name')
+        found = search_client(client_name)
+        
         if found:
-            print("The client is in the clients database")
-            _print_client_data(client_index)
+            print('The client is in the client\'s list')
         else:
-            print(f'The client index: {client_index}, is not in our clients database.')
+            print(f'The client: {client_name} is not in our client\'s list')
         
     else:
         print('Invalid command.')
+
+    _save_clients_to_storage()
